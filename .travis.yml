@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run test npm test -- --coverage
+
+after_success:
+  - docker build -t awchristie/multi-client ./client
+  - docker build -t awchristie/multi-nginx ./nginx
+  - docker build -t awchristie/multi-worker ./worker
+  - docker build -t awchristie/multi-server ./server
+  - echo "$DOCKER_PW" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push awchristie/multi-client
+  - docker push awchristie/multi-nginx
+  - docker push awchristie/multi-server
+  - docker push awchristie/multi-worker
